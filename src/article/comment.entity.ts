@@ -17,10 +17,10 @@ export class Comment {
   @Property()
   body: string;
 
-  @ManyToOne()
+  @ManyToOne(() => Article)
   article: Article;
 
-  @ManyToOne()
+  @ManyToOne(() => User)
   author: User;
 
   constructor(author: User, article: Article, body: string) {

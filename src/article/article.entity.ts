@@ -31,7 +31,7 @@ export class Article {
   @Property({ type: ArrayType })
   tagList: string[] = [];
 
-  @ManyToOne()
+  @ManyToOne(() => User)
   author: User;
 
   @OneToMany(() => Comment, comment => comment.article, { eager: true, orphanRemoval: true })
