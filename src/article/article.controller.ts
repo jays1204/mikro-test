@@ -4,13 +4,16 @@ import { User } from '../user/user.decorator';
 import { IArticleRO, IArticlesRO, ICommentsRO } from './article.interface';
 import { ArticleService } from './article.service';
 import { CreateArticleDto, CreateCommentDto } from './dto';
+import { EntityManager } from '@mikro-orm/core';
 
 @ApiBearerAuth()
 @ApiTags('articles')
 @Controller('articles')
 export class ArticleController {
 
-  constructor(private readonly articleService: ArticleService) {}
+  constructor(private readonly articleService: ArticleService,
+              private readonly em: EntityManager
+              ) {}
 
   @ApiOperation({ summary: 'Get all articles' })
   @ApiResponse({ status: 200, description: 'Return all articles.' })
@@ -42,7 +45,14 @@ export class ArticleController {
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @Post()
   async create(@User('id') userId: number, @Body('article') articleData: CreateArticleDto) {
-    return this.articleService.create(userId, articleData);
+    console.log('00000000', this.em.id);
+    return this.em.transactional(async em => {
+      const article = await this.articleService.create(userId, articleData);
+      console.log('11111111111', em.id, article.article);
+      const comment = await this.articleService.addComment(userId, article.article.slug, {body: 'cccccccccccoment'});
+      console.log('22222222222', em.id, comment);
+      return article;
+    });
   }
 
   @ApiOperation({ summary: 'Update article' })

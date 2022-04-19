@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { QueryOrder, wrap } from '@mikro-orm/core';
+import { EntityManager, QueryOrder, wrap } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs'
 import { EntityRepository } from '@mikro-orm/mysql';
 
@@ -19,6 +19,7 @@ export class ArticleService {
     private readonly commentRepository: EntityRepository<Comment>,
     @InjectRepository(User)
     private readonly userRepository: EntityRepository<User>,
+    private readonly em: EntityManager,
   ) {}
 
   async findAll(userId: number, query: any): Promise<IArticlesRO> {
@@ -90,7 +91,10 @@ export class ArticleService {
   }
 
   async addComment(userId: number, slug: string, dto: CreateCommentDto) {
-    const article = await this.articleRepository.findOneOrFail({ slug }, { populate: ['author'] });
+    console.log('this.em', this.em.id);
+    const article = await this.em.findOneOrFail(Article, { slug }, { populate: ['author'] });
+    console.log('hello, is this printed?', this.em.id);
+    // const article = await this.articleRepository.findOneOrFail({ slug }, { populate: ['author'] });
     const author = await this.userRepository.findOneOrFail(userId);
     const comment = new Comment(author, article, dto.body);
     await this.commentRepository.persistAndFlush(comment);
